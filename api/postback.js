@@ -1,23 +1,61 @@
+// api/postback.js
+
 export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  const { fbclid, payout } = req.query;
+
+  if (!fbclid) {
+    return res.status(400).json({ error: 'fbclid é obrigatório' });
+  }
+
+  // Coloque aqui seus dados do Pixel
+  const ACCESS_TOKEN = 'EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD'; // Copie do Gerenciador de Eventos
+  const PIXEL_ID = '1907845369956747';
+
+  const eventTime = Math.floor(Date.now() / 1000); // timestamp atual
+  const eventName = 'Lead'; // Ou 'Purchase' se preferir
+  const currency = 'USD';
+
+  const payload = {
+    data: [
+      {
+        event_name: eventName,
+        event_time: eventTime,
+        action_source: 'website',
+        event_source_url: 'https://fastquote.pro', // qualquer domínio válido
+        user_data: {
+          fbc: fbclid
+        },
+        custom_data: {
+          value: parseFloat(payout || 0),
+          currency
+        }
+      }
+    ]
+  };
+
   try {
-    if (req.method !== 'GET') {
-      return res.status(405).send('Método não permitido');
+    const fbRes = await fetch(`https://graph.facebook.com/v18.0/${1907845369956747}/events?access_token=${EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const fbJson = await fbRes.json();
+
+    if (fbRes.ok) {
+      return res.status(200).send('Conversão enviada com sucesso');
+    } else {
+      console.error('Erro no envio para Facebook:', fbJson);
+      return res.status(500).json({ error: fbJson });
     }
-
-    const clickid = req.query.fbclid || req.query.source || req.query.aff_sub2;
-    const payout = req.query.sum || req.query.payout;
-
-    // Verifica se os parâmetros são válidos
-    if (!clickid || !payout) {
-      return res.status(400).send('Click ID ou Payout não informados');
-    }
-
-    console.log(`Click ID: ${clickid}, Payout: ${payout}`);
-
-    // Retorno de sucesso simples para testar a função sem o envio para o Facebook
-    res.status(200).send('Conversão processada!');
-  } catch (error) {
-    console.error('Erro no processamento da função:', error);
-    res.status(500).send('Erro interno do servidor');
+  } catch (err) {
+    console.error('Erro geral:', err);
+    return res.status(500).send('Erro no servidor');
   }
 }
