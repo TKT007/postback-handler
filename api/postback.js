@@ -8,15 +8,15 @@ export default async function handler(req, res) {
   const { fbclid, payout } = req.query;
 
   if (!fbclid) {
-    return res.status(400).json({ error: 'fbclid é obrigatório' });
+    return res.status(400).json({ error: 'Parâmetro fbclid é obrigatório' });
   }
 
-  // Coloque aqui seus dados do Pixel
-  const ACCESS_TOKEN = 'EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD'; // Copie do Gerenciador de Eventos
+  // Dados do seu pixel do Facebook
+  const ACCESS_TOKEN = 'EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD';
   const PIXEL_ID = '1907845369956747';
 
-  const eventTime = Math.floor(Date.now() / 1000); // timestamp atual
-  const eventName = 'Lead'; // Ou 'Purchase' se preferir
+  const eventTime = Math.floor(Date.now() / 1000);
+  const eventName = 'Lead';
   const currency = 'USD';
 
   const payload = {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         event_name: eventName,
         event_time: eventTime,
         action_source: 'website',
-        event_source_url: 'https://fastquote.pro', // qualquer domínio válido
+        event_source_url: 'https://fastquote.pro', // pode manter esse domínio
         user_data: {
           fbc: fbclid
         },
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   };
 
   try {
-    const fbRes = await fetch(`https://graph.facebook.com/v18.0/${1907845369956747}/events?access_token=${EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD}`, {
+    const fbRes = await fetch(`https://graph.facebook.com/v18.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -51,11 +51,11 @@ export default async function handler(req, res) {
     if (fbRes.ok) {
       return res.status(200).send('Conversão enviada com sucesso');
     } else {
-      console.error('Erro no envio para Facebook:', fbJson);
+      console.error('Erro ao enviar para Facebook:', fbJson);
       return res.status(500).json({ error: fbJson });
     }
   } catch (err) {
-    console.error('Erro geral:', err);
+    console.error('Erro interno:', err);
     return res.status(500).send('Erro no servidor');
   }
 }
