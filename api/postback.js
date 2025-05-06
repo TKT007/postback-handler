@@ -5,13 +5,12 @@ export default async function handler(req, res) {
     return res.status(405).send('Method Not Allowed');
   }
 
-  const { fbclid, payout } = req.query;
+  const { fbclid, payout, test_event_code } = req.query;
 
   if (!fbclid) {
     return res.status(400).json({ error: 'Parâmetro fbclid é obrigatório' });
   }
 
-  // Dados do seu pixel do Facebook
   const ACCESS_TOKEN = 'EAAfFtSgH5yMBOxZCyzcrDVcZAwHcJ9EuTzOK1wzX2M4YmUDcmx1uW7ymMSSnT0OwwzZBbnMYDCFcM4hYIwiEPsKZCRI65ZByNqQjORqMi8zZARznHNFWMvLogqkh9c6vuNQPFrUZCZA435H3z8ZASSbOrZCMbtHsZCeeZBvPIURPX0e1mjWZAFw7DEt0O63rapgBLalVadgZDZD';
   const PIXEL_ID = '1907845369956747';
 
@@ -25,7 +24,7 @@ export default async function handler(req, res) {
         event_name: eventName,
         event_time: eventTime,
         action_source: 'website',
-        event_source_url: 'https://fastquote.pro', // pode manter esse domínio
+        event_source_url: 'https://fastquote.pro',
         user_data: {
           fbc: fbclid
         },
@@ -34,7 +33,8 @@ export default async function handler(req, res) {
           currency
         }
       }
-    ]
+    ],
+    ...(test_event_code && { test_event_code }) // adiciona test_event_code se estiver presente
   };
 
   try {
